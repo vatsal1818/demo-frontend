@@ -1,0 +1,83 @@
+/* AllTrades.css */
+
+.filter-section {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.filter-section label {
+    margin-right: 10px;
+    font-weight: bold;
+    color: #333;
+}
+
+.filter-section input[type="date"] {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #555;
+    transition: border-color 0.3s ease;
+}
+
+.filter-section input[type="date"]:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.upper {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 50px;
+}
+
+.upper span {
+    margin-right: 20px;
+}
+
+.trades-table,
+.trade-details-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.trades-table th,
+.trades-table td,
+.trade-details-table th,
+.trade-details-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.trades-table th,
+.trade-details-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.trade-details-table th {
+    text-align: right;
+}
+
+.trade-details-table td {
+    text-align: left;
+}
+
+.profit {
+    color: green;
+    font-weight: bold;
+}
+
+.loss {
+    color: red;
+    font-weight: bold;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+}
