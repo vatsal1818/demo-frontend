@@ -25,6 +25,7 @@ const UserChat = () => {
     const peerConnectionRef = useRef(null);
     const localVideoRef = useRef(null);
     const remoteVideoRef = useRef(null);
+    const [isBroadcastCall, setIsBroadcastCall] = useState(false);
 
     const initializePeerConnection = useCallback(() => {
         if (peerConnectionRef.current) {
@@ -269,9 +270,9 @@ const UserChat = () => {
         }
     };
 
-    const handleCallOffer = async ({ from, offer, type }) => {
-        console.log("User received call offer from:", from, "Offer:", offer);
-        setIncomingCall({ from, offer, type });
+    const handleCallOffer = async ({ from, offer, type, isBroadcast }) => {
+        console.log(`User received ${isBroadcast ? 'broadcast' : 'private'} call offer from:`, from, "Offer:", offer);
+        setIncomingCall({ from, offer, type, isBroadcast });
     };
 
     const acceptCall = async () => {
@@ -282,7 +283,6 @@ const UserChat = () => {
                 initializePeerConnection();
             }
 
-            // Set the remote description using handleRemoteDescription
             await handleRemoteDescription(peerConnectionRef.current, new RTCSessionDescription(incomingCall.offer));
 
             const stream = await navigator.mediaDevices.getUserMedia({
@@ -294,6 +294,7 @@ const UserChat = () => {
             setRemoteStream(stream);
             setCallType(incomingCall.type);
             setInCall(true);
+            setIsBroadcastCall(incomingCall.isBroadcast);
 
             stream.getTracks().forEach((track) => {
                 console.log("Adding track to peer connection", track);
@@ -306,8 +307,12 @@ const UserChat = () => {
             await peerConnectionRef.current.setLocalDescription(answer);
 
             if (socket) {
-                socket.emit("call-answer", { to: incomingCall.from, answer });
-                console.log("Emitting call-answer to:", incomingCall.from, "Answer:", answer);
+                if (incomingCall.isBroadcast) {
+                    socket.emit("broadcast-call-answer", { answer });
+                } else {
+                    socket.emit("call-answer", { to: incomingCall.from, answer });
+                }
+                console.log(`Emitting ${incomingCall.isBroadcast ? 'broadcast' : 'private'} call answer`);
             } else {
                 console.error("Socket is not available");
             }
@@ -340,8 +345,8 @@ const UserChat = () => {
         setIncomingCall(null);
     };
 
-    const handleIceCandidate = async ({ from, candidate }) => {
-        console.log("User received ICE candidate from:", from, "Candidate:", candidate);
+    const handleIceCandidate = async ({ from, candidate, isBroadcast }) => {
+        console.log(`User received ${isBroadcast ? 'broadcast' : 'private'} ICE candidate from:`, from, "Candidate:", candidate);
 
         try {
             if (peerConnectionRef.current && peerConnectionRef.current.remoteDescription) {
@@ -369,6 +374,7 @@ const UserChat = () => {
         setRemoteStream(null);
         setInCall(false);
         setCallType(null);
+        setIsBroadcastCall(false);
 
         if (peerConnectionRef.current) {
             peerConnectionRef.current.close();
@@ -376,9 +382,11 @@ const UserChat = () => {
         }
         initializePeerConnection();
 
-        // Emit end-call event to ensure the other party also ends the call
-        console.log("UserChat: Emitting end-call event");
-        socket.emit("end-call", { to: admin });
+        if (isBroadcastCall) {
+            socket.emit("leave-broadcast-call");
+        } else {
+            socket.emit("end-call", { to: admin });
+        }
     };
 
     const endCall = () => {
@@ -457,14 +465,14 @@ const UserChat = () => {
             )}
             {incomingCall && (
                 <div className="incoming-call">
-                    <h3>Incoming {incomingCall.type} call</h3>
+                    <h3>Incoming {incomingCall.isBroadcast ? 'Broadcast' : 'Private'} {incomingCall.type} call</h3>
                     <button onClick={acceptCall}>Accept</button>
                     <button onClick={rejectCall}>Reject</button>
                 </div>
             )}
             {inCall && (
                 <div className="call-container">
-                    <h3>{callType === "audio" ? "Voice Call" : "Video Call"} in progress</h3>
+                    <h3>{isBroadcastCall ? 'Broadcast' : 'Private'} {callType === "audio" ? "Voice" : "Video"} Call in progress</h3>
                     {callType === "video" && (
                         <div className="video-streams">
                             <video
@@ -485,7 +493,7 @@ const UserChat = () => {
                     {callType === "audio" && (
                         <audio ref={remoteVideoRef} autoPlay />
                     )}
-                    <button onClick={endCall}>End Call</button>
+                    <button onClick={handleEndCall}>End Call</button>
                 </div>
             )}
         </div>
