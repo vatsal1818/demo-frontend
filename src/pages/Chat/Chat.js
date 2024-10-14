@@ -41,7 +41,7 @@ const UserChat = () => {
         peerConnectionRef.current.onicecandidate = (event) => {
             if (event.candidate && socket) {
                 console.log("Sending ICE candidate", event.candidate);
-                socket.emit("ice-candidate", {
+                socket.emit(isBroadcastCall ? "broadcast-ice-candidate" : "ice-candidate", {
                     to: admin,
                     candidate: event.candidate,
                 });
@@ -61,7 +61,8 @@ const UserChat = () => {
                 handleEndCall();
             }
         };
-    }, [socket]);
+    }, [socket, isBroadcastCall]);
+
 
     useEffect(() => {
         initializePeerConnection();
@@ -161,9 +162,17 @@ const UserChat = () => {
             });
 
             socket.on("call-offer", handleCallOffer);
+            socket.on("broadcast-call-offer", handleCallOffer);
+
             socket.on("call-answer", handleCallAnswer);
+            socket.on("broadcast-call-answer", handleCallAnswer);
+
             socket.on("ice-candidate", handleIceCandidate);
+            socket.on("broadcast-ice-candidate", handleIceCandidate);
+
             socket.on("end-call", handleEndCall);
+            socket.on("end-broadcast-call", handleEndBroadcastCall);
+
             socket.on("call-rejected", handleCallRejected);
 
             return () => {
@@ -172,10 +181,19 @@ const UserChat = () => {
                 socket.off("admin-toggle-user-chat");
                 socket.off("admin-private-message");
                 socket.off("admin-broadcast");
+
                 socket.off("call-offer");
+                socket.off("broadcast-call-offer");
+
                 socket.off("call-answer");
+                socket.off("broadcast-call-answer")
+
                 socket.off("ice-candidate");
+                socket.off("broadcast-ice-candidate");
+
                 socket.off("end-call");
+                socket.off("end-broadcast-call");
+
                 socket.off("call-rejected");
             };
         }
@@ -270,34 +288,46 @@ const UserChat = () => {
         }
     };
 
+    // Handle private call offers only
     const handleCallOffer = async ({ from, offer, type, isBroadcast }) => {
         console.log(`User received ${isBroadcast ? 'broadcast' : 'private'} call offer from:`, from, "Offer:", offer);
         setIncomingCall({ from, offer, type, isBroadcast });
     };
 
+    // Handle broadcast call offers only
+    // const handleBroadcastCallOffer = async ({ offer, type }) => {
+    //     // Only handle broadcast calls
+    //     console.log("User received broadcast call offer. Type:", type);
+    //     setIncomingCall({ from: admin, offer, type, isBroadcast: true });
+    // };
+
     const acceptCall = async () => {
         if (!incomingCall) return;
+        console.log("Starting call acceptance process");
+
+        if (!peerConnectionRef.current) {
+            initializePeerConnection();
+        }
 
         try {
-            if (!peerConnectionRef.current) {
-                initializePeerConnection();
-            }
-
             await handleRemoteDescription(peerConnectionRef.current, new RTCSessionDescription(incomingCall.offer));
+
+            console.log("Remote description set successfully");
 
             const stream = await navigator.mediaDevices.getUserMedia({
                 audio: true,
                 video: incomingCall.type === "video",
             });
 
+            console.log("Local media stream obtained");
+
             setLocalStream(stream);
             setRemoteStream(stream);
             setCallType(incomingCall.type);
-            setInCall(true);
             setIsBroadcastCall(incomingCall.isBroadcast);
+            setInCall(true);
 
-            stream.getTracks().forEach((track) => {
-                console.log("Adding track to peer connection", track);
+            stream.getTracks().forEach(track => {
                 peerConnectionRef.current.addTrack(track, stream);
             });
 
@@ -306,25 +336,23 @@ const UserChat = () => {
 
             await peerConnectionRef.current.setLocalDescription(answer);
 
-            if (socket) {
-                if (incomingCall.isBroadcast) {
-                    socket.emit("broadcast-call-answer", { answer });
-                } else {
-                    socket.emit("call-answer", { to: incomingCall.from, answer });
-                }
-                console.log(`Emitting ${incomingCall.isBroadcast ? 'broadcast' : 'private'} call answer`);
+            // Emit appropriate call-answer event based on the type of the call
+            if (incomingCall.isBroadcast) {
+                socket.emit("broadcast-call-answer", { answer });
             } else {
-                console.error("Socket is not available");
+                socket.emit("call-answer", { to: incomingCall.from, answer });
             }
 
             setIncomingCall(null);
+            console.log("Call acceptance process completed");
         } catch (error) {
             console.error("Error accepting call:", error);
         }
     };
 
+
     const handleCallAnswer = async ({ from, answer }) => {
-        console.log("User received call answer from:", from, "Answer:", answer);
+        console.log("User received private call answer from:", from, "Answer:", answer);
 
         try {
             if (peerConnectionRef.current) {
@@ -332,12 +360,29 @@ const UserChat = () => {
                     peerConnectionRef.current,
                     new RTCSessionDescription(answer)
                 );
-                console.log("User successfully set remote description");
+                console.log("User successfully set private call remote description");
             }
         } catch (error) {
-            console.error("User error setting remote description:", error);
+            console.error("User error setting private call remote description:", error);
         }
     };
+
+    // const handleBroadcastCallAnswer = async ({ answer }) => {
+    //     console.log("User received broadcast call answer", answer);
+
+    //     try {
+    //         if (peerConnectionRef.current) {
+    //             await handleRemoteDescription(
+    //                 peerConnectionRef.current,
+    //                 new RTCSessionDescription(answer)
+    //             );
+    //             console.log("User successfully set broadcast call remote description");
+    //         }
+    //     } catch (error) {
+    //         console.error("User error setting broadcast call remote description:", error);
+    //     }
+    // };
+
 
     const rejectCall = () => {
         if (!incomingCall) return;
@@ -345,8 +390,8 @@ const UserChat = () => {
         setIncomingCall(null);
     };
 
-    const handleIceCandidate = async ({ from, candidate, isBroadcast }) => {
-        console.log(`User received ${isBroadcast ? 'broadcast' : 'private'} ICE candidate from:`, from, "Candidate:", candidate);
+    const handleIceCandidate = async ({ from, candidate }) => {
+        console.log("User received ICE candidate from:", from, "Candidate:", candidate);
 
         try {
             if (peerConnectionRef.current && peerConnectionRef.current.remoteDescription) {
@@ -360,7 +405,6 @@ const UserChat = () => {
             console.error("User error adding ICE candidate:", error);
         }
     };
-
 
     const handleEndCall = () => {
         console.log("UserChat: Ending call");
@@ -388,6 +432,32 @@ const UserChat = () => {
             socket.emit("end-call", { to: admin });
         }
     };
+
+
+    const handleEndBroadcastCall = () => {
+        console.log("UserChat: Ending broadcast call");
+        if (localStream) {
+            localStream.getTracks().forEach(track => {
+                track.stop();
+                console.log("UserChat: Stopped track:", track.kind);
+            });
+            setLocalStream(null);
+        }
+        setRemoteStream(null);
+        setInCall(false);
+        setCallType(null);
+        setIsBroadcastCall(false);
+
+        if (peerConnectionRef.current) {
+            peerConnectionRef.current.close();
+            console.log("UserChat: Closed peer connection");
+        }
+        initializePeerConnection();
+
+        // Notify the server that the user has left the broadcast call
+        socket.emit("leave-broadcast-call");
+    };
+
 
     const endCall = () => {
         handleEndCall();
@@ -493,7 +563,9 @@ const UserChat = () => {
                     {callType === "audio" && (
                         <audio ref={remoteVideoRef} autoPlay />
                     )}
-                    <button onClick={handleEndCall}>End Call</button>
+                    <button onClick={isBroadcastCall ? handleEndBroadcastCall : handleEndCall}>
+                        End {isBroadcastCall ? 'Broadcast' : 'Private'} Call
+                    </button>
                 </div>
             )}
         </div>
