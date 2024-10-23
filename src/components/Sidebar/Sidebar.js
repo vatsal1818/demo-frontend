@@ -20,6 +20,11 @@ const Sidebar = () => {
                     <p>All trade</p>
                 </div>
             </Link>
+            <Link to="user-courses" style={{ textDecoration: "none" }}>
+                <div className="sidebar-item">
+                    <p>Courses</p>
+                </div>
+            </Link>
         </div>
     );
 };

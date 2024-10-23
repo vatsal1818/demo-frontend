@@ -64,6 +64,7 @@ const UserChat = () => {
     }, [socket, isBroadcastCall]);
 
 
+
     useEffect(() => {
         initializePeerConnection();
 
@@ -314,22 +315,24 @@ const UserChat = () => {
 
             console.log("Remote description set successfully");
 
-            const stream = await navigator.mediaDevices.getUserMedia({
-                audio: true,
-                video: incomingCall.type === "video",
-            });
+            if (incomingCall.isBroadcast) {
+                // For broadcast calls, we don't need to get user media
+                console.log("Accepting broadcast call");
+            } else {
+                // For private calls, get user media as before
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: incomingCall.type === "video",
+                });
+                setLocalStream(stream);
+                stream.getTracks().forEach(track => {
+                    peerConnectionRef.current.addTrack(track, stream);
+                });
+            }
 
-            console.log("Local media stream obtained");
-
-            setLocalStream(stream);
-            setRemoteStream(stream);
             setCallType(incomingCall.type);
             setIsBroadcastCall(incomingCall.isBroadcast);
             setInCall(true);
-
-            stream.getTracks().forEach(track => {
-                peerConnectionRef.current.addTrack(track, stream);
-            });
 
             const answer = await createAnswer(peerConnectionRef.current);
             console.log("Created answer", answer);
@@ -545,13 +548,15 @@ const UserChat = () => {
                     <h3>{isBroadcastCall ? 'Broadcast' : 'Private'} {callType === "audio" ? "Voice" : "Video"} Call in progress</h3>
                     {callType === "video" && (
                         <div className="video-streams">
-                            <video
-                                ref={localVideoRef}
-                                autoPlay
-                                muted
-                                playsInline
-                                style={{ width: "300px", height: "225px" }}
-                            />
+                            {!isBroadcastCall && (
+                                <video
+                                    ref={localVideoRef}
+                                    autoPlay
+                                    muted
+                                    playsInline
+                                    style={{ width: "300px", height: "225px" }}
+                                />
+                            )}
                             <video
                                 ref={remoteVideoRef}
                                 autoPlay
