@@ -1,0 +1,317 @@
+/* CourseList.css */
+.loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.error-message {
+    color: #e74c3c;
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
+}
+
+.courses-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.courses-title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 40px;
+}
+
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    padding: 20px 0;
+}
+
+.course-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+.course-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.course-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.course-footer {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+}
+
+.course-price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #3498db;
+}
+
+.course-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-view {
+    background-color: #f8f9fa;
+    color: #2c3e50;
+    border: 1px solid #dee2e6;
+}
+
+.btn-view:hover {
+    background-color: #e9ecef;
+}
+
+.btn-buy {
+    background-color: #3498db;
+    color: white;
+    border: none;
+}
+
+.btn-buy:hover {
+    background-color: #2980b9;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .courses-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .courses-title {
+        font-size: 2rem;
+    }
+}
+
+/* CourseDetail.css */
+.course-detail-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.course-detail-header {
+    margin-bottom: 40px;
+}
+
+.course-detail-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+.content-grid {
+    display: grid;
+    gap: 30px;
+    margin-bottom: 100px;
+    /* Space for fixed bottom bar */
+}
+
+.content-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.content-thumbnail {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.content-info {
+    padding: 20px;
+}
+
+.content-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.content-description {
+    color: #6c757d;
+    line-height: 1.6;
+}
+
+.purchase-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    z-index: 1000;
+}
+
+.purchase-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.purchase-price {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #3498db;
+}
+
+.purchase-button {
+    padding: 12px 30px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.purchase-button:hover {
+    background-color: #2980b9;
+}
+
+.purchase-button:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+}
+
+.processing {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.processing-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid white;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Add these styles to your existing CourseDetail.css */
+
+.back-button-container {
+    padding: 20px 0;
+    margin-bottom: 20px;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    color: #2c3e50;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.back-button:hover {
+    background-color: #e9ecef;
+    transform: translateX(-5px);
+}
+
+.back-button svg {
+    transition: transform 0.2s ease;
+}
+
+.back-button:hover svg {
+    transform: translateX(-3px);
+}
+
+/* Update existing styles */
+.course-detail-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    /* Reduced top padding to accommodate back button */
+}
+
+/* Ensure proper spacing */
+.course-detail-header {
+    margin-top: 0;
+    /* Adjusted for back button */
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .course-detail-title {
+        font-size: 2rem;
+    }
+
+    .purchase-container {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+
+    .purchase-button {
+        width: 100%;
+    }
+}

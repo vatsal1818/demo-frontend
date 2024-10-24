@@ -10,8 +10,10 @@ import Layout from './components/Layout/Layout.js';
 import AllTrades from './pages/All-trade/AllTrade.js';
 import AdminMessagePopup from './components/AdminMessagePopUp/AdminMessagePopup';
 import { SocketProvider } from './components/SocketContext/SocketContext.js';
-import UserCourses from './pages/Courses/UserCourses.js';
-import MyCourses from './pages/Courses/MyCourses.js';
+import CourseList from './pages/Courses/CourseList.js';
+import CourseDetail from './pages/Courses/CourseDetails.js';
+import PurchasedCourses from './pages/Courses/PurchasedCourse.js';
+import CourseContent from './pages/Courses/CourseContent.js';
 
 function App() {
   return (
@@ -27,8 +29,10 @@ function App() {
               <Route path="/chat" element={<ProtectedRoute><UserChat /></ProtectedRoute>} />
               <Route path="*" element={<Navigate to="/" replace />} />
               <Route path="/alltrade" element={<ProtectedRoute><AllTrades /></ProtectedRoute>} />
-              <Route path="/user-courses" element={<ProtectedRoute><UserCourses /></ProtectedRoute>} />
-              <Route path="/my-courses" element={<ProtectedRoute><MyCourses /></ProtectedRoute>} />
+              <Route path="/courses" element={<ProtectedRoute><CourseList /></ProtectedRoute>} />
+              <Route path="/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
+              <Route path="/my-courses" element={<ProtectedRoute><PurchasedCourses /></ProtectedRoute>} />
+              <Route path="/courses/:courseId/content" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
             </Routes>
           </Layout>
         </div>

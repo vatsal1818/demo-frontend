@@ -3,4 +3,5 @@ export const FILE_UPLOAD_URL = `${process.env.REACT_APP_API_URL}/api/upload`;
 
 export const COURSES = `${process.env.REACT_APP_API_URL}/api/courses`;
 
-export const PURCHASED_COURSES = `${process.env.REACT_APP_API_URL}/api/user/purchased-courses`;
+export const PURCHASED_COURSES = `${process.env.REACT_APP_API_URL}/api/users/purchases`;
+
