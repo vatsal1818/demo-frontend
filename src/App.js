@@ -14,6 +14,7 @@ import CourseList from './pages/Courses/CourseList.js';
 import CourseDetail from './pages/Courses/CourseDetails.js';
 import PurchasedCourses from './pages/Courses/PurchasedCourse.js';
 import CourseContent from './pages/Courses/CourseContent.js';
+import LandingPage from './pages/LandingPage/LandingPage.js';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
             <AdminMessagePopup />
             <Routes>
               <Route path="/login" element={<LoginSignUp />} />
+              <Route path="/home-page" element={<LandingPage />} />
               <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
               <Route path="/chat" element={<ProtectedRoute><UserChat /></ProtectedRoute>} />
               <Route path="*" element={<Navigate to="/" replace />} />

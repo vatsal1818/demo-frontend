@@ -30,6 +30,11 @@ const Sidebar = () => {
                     <p>My Courses</p>
                 </div>
             </Link>
+            <Link to="home-page" style={{ textDecoration: "none" }}>
+                <div className="sidebar-item">
+                    <p>Home Page</p>
+                </div>
+            </Link>
         </div>
     );
 };

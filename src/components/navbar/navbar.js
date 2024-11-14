@@ -39,8 +39,7 @@ const Navbar = (isAuthenticated) => {
                 <Link to='/'>Logo</Link>
             </div>
             <ul className='navbar-links'>
-                <li><Link to="/">Home</Link></li>
-                {isAuthenticated && <li><Link to="/chat">Chat</Link></li>}
+                <li><Link to="/home-page">Home</Link></li>
                 {isAuthenticated ? (
                     <li><button onClick={handleLogout}>Logout</button></li>
                 ) : (
