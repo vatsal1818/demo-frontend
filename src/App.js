@@ -15,6 +15,9 @@ import CourseDetail from './pages/Courses/CourseDetails.js';
 import PurchasedCourses from './pages/Courses/PurchasedCourse.js';
 import CourseContent from './pages/Courses/CourseContent.js';
 import LandingPage from './pages/LandingPage/LandingPage.js';
+import AboutUs from './pages/AboutUs/AboutUs.js';
+import Contactus from './pages/ContactUs/Contactus.js';
+import AddedContent from './pages/Courses/AddedContent.js';
 
 function App() {
   return (
@@ -27,14 +30,17 @@ function App() {
             <Routes>
               <Route path="/login" element={<LoginSignUp />} />
               <Route path="/home-page" element={<LandingPage />} />
+              <Route path="/about-page" element={<AboutUs />} />
+              <Route path="/contact-page" element={<Contactus />} />
+              <Route path="/courses" element={<CourseList />} />
+              <Route path="/courses/:courseId" element={<CourseDetail />} />
               <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
               <Route path="/chat" element={<ProtectedRoute><UserChat /></ProtectedRoute>} />
               <Route path="*" element={<Navigate to="/" replace />} />
               <Route path="/alltrade" element={<ProtectedRoute><AllTrades /></ProtectedRoute>} />
-              <Route path="/courses" element={<ProtectedRoute><CourseList /></ProtectedRoute>} />
-              <Route path="/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
               <Route path="/my-courses" element={<ProtectedRoute><PurchasedCourses /></ProtectedRoute>} />
               <Route path="/courses/:courseId/content" element={<ProtectedRoute><CourseContent /></ProtectedRoute>} />
+              <Route path="/added-content" element={<ProtectedRoute><AddedContent /></ProtectedRoute>} />
             </Routes>
           </Layout>
         </div>

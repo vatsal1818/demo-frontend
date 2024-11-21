@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Play, ArrowLeft, Shield } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Trash2 } from 'lucide-react';
 import { COURSES } from '../../helper/Apihelpers';
 import "./PurchasedCourse.css";
 
@@ -8,6 +8,9 @@ const CourseContent = () => {
     const [courseContent, setCourseContent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [comments, setComments] = useState([]);
+    const [newComment, setNewComment] = useState('');
+    const [isCommenting, setIsCommenting] = useState(false);
     const { courseId } = useParams();
     const navigate = useNavigate();
     const videoRefs = useRef([]);
@@ -81,6 +84,87 @@ const CourseContent = () => {
         };
     }, [navigate]);
 
+    const fetchComments = async () => {
+        try {
+            const response = await fetch(`${COURSES}/${courseId}/comments`, {
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to fetch comments');
+            }
+
+            const data = await response.json();
+            setComments(data.data);
+        } catch (err) {
+            console.error('Error fetching comments:', err);
+        }
+    };
+
+    const handleSubmitComment = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await fetch(`${COURSES}/${courseId}/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                },
+                credentials: 'include',
+                body: JSON.stringify({ content: newComment })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to post comment');
+            }
+
+            const data = await response.json();
+            setComments(prevComments => [...prevComments, data.data]);
+            setNewComment('');
+            setIsCommenting(false);
+        } catch (err) {
+            console.error('Error posting comment:', err);
+        }
+    };
+
+    const handleDeleteComment = async (commentId) => {
+        if (!window.confirm('Are you sure you want to delete this comment?')) return;
+
+        try {
+            const response = await fetch(`${COURSES}/${courseId}/comments/${commentId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to delete comment');
+            }
+
+            setComments(prevComments =>
+                prevComments.filter(comment => comment._id !== commentId)
+            );
+        } catch (err) {
+            console.error('Error deleting comment:', err);
+        }
+    };
+
+
+    useEffect(() => {
+        if (courseId) {
+            fetchComments();
+        }
+    }, [courseId]);
+
 
     useEffect(() => {
         fetchCourseContent();
@@ -146,20 +230,22 @@ const CourseContent = () => {
                     onClick={() => navigate('/my-courses')}
                     className="back-button"
                 >
-                    <ArrowLeft size={20} />
+                    <ArrowLeft size={18} />
                     Back to My Courses
                 </button>
                 <h1>{courseContent?.courseName}</h1>
-                <div className="security-badge">
-                    <Shield size={16} />
-                    <span>Protected Content</span>
-                </div>
+                <button
+                    onClick={() => navigate('/added-content')}
+                    className="content-button"
+                >
+                    Content
+                </button>
             </div>
+
             <div className="content-list">
                 {courseContent?.content.map((content, index) => (
                     <div key={index} className="content-item">
                         <div className="content-item-header">
-                            <Play size={16} className="play-icon" />
                             <h4>{content.title}</h4>
                         </div>
                         <p>{content.description}</p>
@@ -183,6 +269,72 @@ const CourseContent = () => {
                         </div>
                     </div>
                 ))}
+            </div>
+
+            <div className="course-description">
+                <h2>{courseContent?.courseDescription}</h2>
+            </div>
+
+            {/* Comments Section */}
+            <div className="comments-section">
+                <div className="comments-header">
+                    <h3>Comments</h3>
+                    <button
+                        className="add-comment-btn"
+                        onClick={() => setIsCommenting(!isCommenting)}
+                    >
+                        <MessageSquare size={18} />
+                        {isCommenting ? 'Cancel' : 'Add Comment'}
+                    </button>
+                </div>
+
+                {isCommenting && (
+                    <form onSubmit={handleSubmitComment} className="comment-form">
+                        <textarea
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            placeholder="Write your comment here..."
+                            required
+                            className="comment-input"
+                            maxLength={1000} // Optional: add maximum length
+                        />
+                        <div className="comment-actions">
+                            <button type="submit" className="submit-comment-btn">
+                                Post Comment
+                            </button>
+                        </div>
+                    </form>
+                )}
+
+                <div className="comments-list">
+                    {comments.map(comment => (
+                        <div key={comment._id} className="comment-item">
+                            <div className="comment-header">
+                                <span className="comment-author">
+                                    {comment.user?.username || 'Unknown User'}
+                                </span>
+                                <span className="comment-date">
+                                    {new Date(comment.createdAt || comment.timestamp).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                    })}
+                                </span>
+                            </div>
+                            <p className="comment-content">{comment.content}</p>
+                            <button
+                                onClick={() => handleDeleteComment(comment._id)}
+                                className="delete-comment-btn"
+                                title="Delete comment"
+                            >
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    ))}
+                    {comments.length === 0 && (
+                        <p className="no-comments">No comments yet. Be the first to comment!</p>
+                    )}
+                </div>
             </div>
         </div>
     );

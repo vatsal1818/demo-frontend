@@ -227,10 +227,12 @@
 }
 
 .content-grid {
-    display: grid;
-    gap: 30px;
     margin-bottom: 100px;
-    /* Space for fixed bottom bar */
+}
+
+.content-grid .display {
+    display: flex;
+    gap: 30px;
 }
 
 .content-card {

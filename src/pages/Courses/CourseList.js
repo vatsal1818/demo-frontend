@@ -112,6 +112,11 @@ const CourseList = () => {
                         {availableCourses.map((course) => (
                             <div key={course._id} className="course-card">
                                 <div className="course-header">
+                                    <img
+                                        src={course.courseThumbnailUrl}
+                                        alt={course.courseName}
+                                        className="content-thumbnail"
+                                    />
                                     <h3 className="course-name">{course.courseName}</h3>
                                     <div className={`expiry-badge ${getExpiryClass(course.expiryDate)}`}>
                                         {course.expiryDate ? `Expires: ${formatExpiryDate(course.expiryDate)}` : 'Always Available'}

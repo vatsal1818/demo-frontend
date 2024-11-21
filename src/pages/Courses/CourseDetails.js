@@ -33,14 +33,29 @@ const CourseDetail = () => {
     };
 
     const handlePaymentSuccess = (data) => {
-        // Show success message (you could add a toast notification library here)
         alert('Purchase successful! Redirecting to course content...');
         navigate(`/my-courses`);
     };
 
     const handlePaymentError = (error) => {
-        // Show error message
         alert('Payment failed. Please try again or contact support.');
+    };
+
+    const handlePurchaseClick = () => {
+        const isAuthenticated = checkUserAuthentication();
+
+        if (!isAuthenticated) {
+            sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+            navigate('/login');
+            return;
+        }
+
+        setShowPaymentModal(true);
+    };
+
+    const checkUserAuthentication = () => {
+        const authToken = localStorage.getItem('accessToken');
+        return !!authToken;
     };
 
     if (loading) {
@@ -61,6 +76,8 @@ const CourseDetail = () => {
 
     if (!course) return null;
 
+    const contentCount = course.content?.length || 0;
+
     return (
         <div className="course-detail-container">
             <div className="back-button-container">
@@ -75,22 +92,30 @@ const CourseDetail = () => {
 
             <div className="course-detail-header">
                 <h1 className="course-detail-title">{course.courseName}</h1>
+                <div className="content-count">
+                    <p>
+                        {contentCount} {contentCount === 1 ? 'video' : 'videos'} in this course
+                    </p>
+                </div>
             </div>
 
             <div className="content-grid">
-                {course.content?.map((content, index) => (
-                    <div key={index} className="content-card">
-                        <img
-                            src={content.thumbnailUrl}
-                            alt={content.title}
-                            className="content-thumbnail"
-                        />
-                        <div className="content-info">
-                            <h3 className="content-title">{content.title}</h3>
-                            <p className="content-description">{content.description}</p>
+                <div className="display">
+                    {course.content?.map((content, index) => (
+                        <div key={index} className="content-card">
+                            <img
+                                src={content.thumbnailUrl}
+                                alt={content.title}
+                                className="content-thumbnail"
+                            />
+                            <div className="content-info">
+                                <h3 className="content-title">{content.title}</h3>
+                                <p className="content-description">{content.description}</p>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
+                <p className="course-description">{course.courseDescription}</p>
             </div>
 
             <div className="purchase-bar">
@@ -99,11 +124,12 @@ const CourseDetail = () => {
                         ${course.price.toFixed(2)}
                     </div>
                     <button
-                        onClick={() => setShowPaymentModal(true)}
+                        onClick={handlePurchaseClick}
                         className="purchase-button"
                     >
                         Buy Course
                     </button>
+
                 </div>
             </div>
 

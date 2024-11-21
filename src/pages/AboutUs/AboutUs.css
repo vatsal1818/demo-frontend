@@ -1,0 +1,131 @@
+.user-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.page-title {
+    font-size: 32px;
+    color: #333;
+    margin: 100px 0 30px 0;
+}
+
+.image-container {
+    margin: 20px auto;
+    max-width: 100%;
+    text-align: center;
+}
+
+.content-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.loading {
+    text-align: center;
+    font-size: 20px;
+    color: #666;
+    margin-top: 100px;
+}
+
+.error-message {
+    text-align: center;
+    color: #a94442;
+    background-color: #f2dede;
+    padding: 15px;
+    margin: 20px auto;
+    max-width: 600px;
+    border-radius: 4px;
+    border: 1px solid #ebccd1;
+}
+
+.main {
+    display: flex;
+}
+
+.page-para {
+    margin: 30px 0 15px;
+    padding-right: 50px;
+}
+
+.main .left,
+.main .right {
+    width: 50%;
+}
+
+.right .page-button {
+    padding: 12px 40px;
+    border-radius: 25px;
+    background: #119b04;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.main .right {
+    margin-left: 50px;
+}
+
+.why-choose-section {
+    padding: 4rem 2rem;
+    margin-top: 2rem;
+}
+
+.why-choose-title {
+    text-align: center;
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 3rem;
+}
+
+.reasons-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.reason-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.reason-card:hover {
+    transform: translateY(-5px);
+}
+
+.reason-title {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.reason-description {
+    color: #666;
+    line-height: 1.6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .why-choose-section {
+        padding: 3rem 1rem;
+    }
+
+    .why-choose-title {
+        font-size: 2rem;
+    }
+
+    .reasons-container {
+        grid-template-columns: 1fr;
+    }
+
+    .reason-card {
+        padding: 1.5rem;
+    }
+}
