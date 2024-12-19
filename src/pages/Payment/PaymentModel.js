@@ -1,7 +1,6 @@
-// PaymentModal.js
-import React, { useState } from 'react';
-import { X, CreditCard, AlertCircle, Loader } from 'lucide-react';
-import { COURSES } from '../../helper/Apihelpers';
+import React, { useState, useEffect } from 'react';
+import { X, CreditCard, AlertCircle, Loader, Tag, Percent, DollarSign } from 'lucide-react';
+import { COURSES, USER_COUPON, USER_AVAILABLE_COUPON, USER_VALIDATE_COUPON } from '../../helper/Apihelpers';
 import './PaymentModel.css';
 
 const PaymentModal = ({ isOpen, onClose, course, onSuccess, onError }) => {
@@ -13,8 +12,105 @@ const PaymentModal = ({ isOpen, onClose, course, onSuccess, onError }) => {
         cvc: '',
         name: ''
     });
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState(null);
+    const [availableCoupons, setAvailableCoupons] = useState([]);
+    const [finalPrice, setFinalPrice] = useState(course?.offerPrice || course?.price);
 
-    if (!isOpen) return null;
+    const fetchApplicableCoupons = async () => {
+        if (!course?._id) return;
+
+        try {
+            // Fetch course-specific coupons
+            const courseCouponsResponse = await fetch(`${USER_COUPON}/course/${course._id}`, {
+                credentials: 'include'
+            });
+            const courseCouponsData = await courseCouponsResponse.json();
+
+            if (!courseCouponsResponse.ok) {
+                throw new Error(courseCouponsData.message || 'Failed to fetch course coupons');
+            }
+
+            // Get valid coupons (course-specific and global)
+            const validCoupons = courseCouponsData.data.filter(coupon => {
+                // Check if coupon is either for this course or is global
+                const isApplicable = coupon.courseId === course._id || coupon.courseId === null;
+
+                // Check if coupon is still valid (you might want to add date validation here)
+                const isValid = true; // Add your validation logic here
+
+                return isApplicable && isValid;
+            });
+
+            setAvailableCoupons(validCoupons);
+
+        } catch (error) {
+            console.error('Error fetching coupons:', error);
+            setAvailableCoupons([]); // Reset to empty array on error
+        }
+    };
+
+    useEffect(() => {
+        if (course) {
+            fetchApplicableCoupons();
+            setAppliedCoupon(null);
+            setCouponCode('');
+            setFinalPrice(course?.offerPrice || course?.price);
+        }
+    }, [course]);
+
+    const handleCouponApply = async () => {
+        if (!couponCode) return;
+
+        setLoading(true);
+        try {
+            const response = await fetch(USER_VALIDATE_COUPON, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    code: couponCode,
+                    amount: course?.offerPrice || course?.price,
+                    courseId: course?._id  // Add courseId to validation
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message);
+            }
+
+            setAppliedCoupon(data);
+            setFinalPrice(data.finalAmount);
+            setStatus({
+                type: 'success',
+                message: `Coupon applied! You saved ${data.discountType === 'percentage'
+                    ? `${data.discount}%`
+                    : `$${data.discountAmount.toFixed(2)}`
+                    }`
+            });
+
+        } catch (err) {
+            setStatus({
+                type: 'error',
+                message: err.message
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    const handleCouponRemove = () => {
+        setAppliedCoupon(null);
+        setCouponCode('');
+        setFinalPrice(course?.offerPrice || course?.price);
+        setStatus({ type: '', message: '' });
+    };
+
 
     // Validation helpers
     const validateCardNumber = (number) => {
@@ -132,7 +228,8 @@ const PaymentModal = ({ isOpen, onClose, course, onSuccess, onError }) => {
                     cardDetails: {
                         ...cardDetails,
                         number: cardDetails.number.replace(/\s/g, '')
-                    }
+                    },
+                    couponCode: appliedCoupon?.code
                 })
             });
 
@@ -163,6 +260,8 @@ const PaymentModal = ({ isOpen, onClose, course, onSuccess, onError }) => {
         }
     };
 
+    if (!isOpen) return null;
+
     return (
         <div className="payment-modal-overlay">
             <div className="payment-modal-container">
@@ -170,14 +269,77 @@ const PaymentModal = ({ isOpen, onClose, course, onSuccess, onError }) => {
                     <X size={20} />
                 </button>
 
+
+
                 <div className="payment-modal-header">
                     <h2 className="payment-modal-title">
                         <CreditCard className="payment-modal-icon" size={24} />
                         Complete Purchase
                     </h2>
                     <p className="payment-modal-subtitle">
-                        Purchase {course?.courseName} for ${course?.price?.toFixed(2)}
+                        Purchase {course?.courseName} for ${finalPrice?.toFixed(2)}
+                        {course?.offerPrice && (
+                            <span className="original-price"> (Original price: ${course?.price?.toFixed(2)})</span>
+                        )}
                     </p>
+                </div>
+
+                <div className="coupon-section">
+                    <h3>Available Course Coupons</h3>
+                    <div className="available-coupons">
+                        {availableCoupons.length > 0 ? (
+                            availableCoupons.map(coupon => (
+                                <div key={coupon.code} className="coupon-item">
+                                    {coupon.discountType === 'percentage' ? (
+                                        <Percent size={16} className="coupon-icon" />
+                                    ) : (
+                                        <DollarSign size={16} className="coupon-icon" />
+                                    )}
+                                    <span className="coupon-code">{coupon.code}</span>
+                                    <span className="coupon-discount">
+                                        {coupon.discountType === 'percentage'
+                                            ? `${coupon.discount}% OFF`
+                                            : `$${coupon.discount} OFF`
+                                        }
+                                    </span>
+                                    <button
+                                        onClick={() => setCouponCode(coupon.code)}
+                                        className="coupon-apply-btn"
+                                    >
+                                        Use
+                                    </button>
+                                </div>
+                            ))
+                        ) : (
+                            <p>No coupons available for this course</p>
+                        )}
+                    </div>
+
+                    <div className="coupon-input-group">
+                        <input
+                            type="text"
+                            placeholder="Enter coupon code"
+                            value={couponCode}
+                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                            disabled={appliedCoupon}
+                        />
+                        {appliedCoupon ? (
+                            <button
+                                onClick={handleCouponRemove}
+                                className="coupon-remove-btn"
+                            >
+                                Remove
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleCouponApply}
+                                className="coupon-apply-btn"
+                                disabled={!couponCode || loading}
+                            >
+                                Apply
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {status.message && (
@@ -237,6 +399,34 @@ const PaymentModal = ({ isOpen, onClose, course, onSuccess, onError }) => {
                         </div>
                     </div>
 
+                    <div className="price-summary">
+                        <div className="price-row">
+                            <span>Original Price:</span>
+                            <span>${course?.price?.toFixed(2)}</span>
+                        </div>
+                        {course?.offerPrice && (
+                            <div className="price-row">
+                                <span>Offer Discount:</span>
+                                <span>-${(course.price - course.offerPrice).toFixed(2)}</span>
+                            </div>
+                        )}
+                        {appliedCoupon && (
+                            <div className="price-row">
+                                <span>Coupon Discount:</span>
+                                <span>
+                                    {appliedCoupon.discountType === 'percentage'
+                                        ? `-${appliedCoupon.discount}%`
+                                        : `-$${appliedCoupon.discountAmount.toFixed(2)}`
+                                    }
+                                </span>
+                            </div>
+                        )}
+                        <div className="price-row total">
+                            <span>Final Price:</span>
+                            <span>${finalPrice.toFixed(2)}</span>
+                        </div>
+                    </div>
+
                     <button
                         type="submit"
                         className={`payment-submit-button ${loading ? 'loading' : ''}`}
@@ -248,7 +438,7 @@ const PaymentModal = ({ isOpen, onClose, course, onSuccess, onError }) => {
                                 Processing...
                             </>
                         ) : (
-                            `Pay $${course?.price?.toFixed(2)}`
+                            `Pay $${finalPrice.toFixed(2)}`
                         )}
                     </button>
                 </form>

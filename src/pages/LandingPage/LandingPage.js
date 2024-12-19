@@ -7,6 +7,8 @@ import { COURSES } from '../../helper/Apihelpers';
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import SocialStatsPage from '../SocialStats/SocialState';
+import HomePage2 from '../HomePage_Why_Choose_us/HomePage2';
 
 const LandingPage = () => {
     const [content, setContent] = useState(null);
@@ -213,6 +215,7 @@ const LandingPage = () => {
                 <>
                     <div className='main'>
                         <div className="left">
+                            <h1 className="page-uppertitle" >{content.upperTitle}</h1>
                             <h1 className="page-title">{content.title}</h1>
                             <p className='page-para'>{content.paragraph}</p>
                             <button className='page-button'>{content.button}</button>
@@ -235,6 +238,10 @@ const LandingPage = () => {
                     </div>
                 </>
             )}
+
+            <SocialStatsPage />
+            <HomePage2 />
+
             <section>
                 <div className="banner-slider-container">
                     <Slider {...sliderSettings}>
@@ -318,14 +325,15 @@ const LandingPage = () => {
                             {testimonials.map((testimonial) => (
                                 <div key={testimonial._id} className="testimonial-card">
                                     <div className="testimonial-content">
+                                        {testimonial.courseName && (
+                                            <span className="testimonial-course">
+                                                {testimonial.courseName}
+                                            </span>
+                                        )}
                                         <p className="testimonial-text">{testimonial.comment}</p>
                                         <div className="testimonial-author">
                                             <strong>{testimonial.name}</strong>
-                                            {testimonial.course && (
-                                                <span className="testimonial-course">
-                                                    {testimonial.course}
-                                                </span>
-                                            )}
+                                            <p>{testimonial.profession}</p>
                                         </div>
                                     </div>
                                 </div>

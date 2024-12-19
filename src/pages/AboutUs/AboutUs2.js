@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "./AboutUs.css"
-import { ADMIN_ABOUT_US } from '../../helper/Apihelpers';
-import SocialStatsPage from '../SocialStats/SocialState';
-import AboutUs2 from './AboutUs2';
+import { ADMIN_ABOUT_US_2 } from '../../helper/Apihelpers';
 
-const AboutUs = () => {
+const AboutUs2 = () => {
     const [aboutContent, setAboutContent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -15,7 +13,7 @@ const AboutUs = () => {
             try {
                 // Fetch both About Us
                 const [aboutResponse] = await Promise.all([
-                    axios.get(ADMIN_ABOUT_US)
+                    axios.get(ADMIN_ABOUT_US_2)
                 ]);
 
                 setAboutContent(aboutResponse.data.data || aboutResponse.data);
@@ -67,7 +65,9 @@ const AboutUs = () => {
                         )}
                     </div>
                     <div className="right">
-                        <h1 className="page-title">{aboutContent.title}</h1>
+                        <h1 className="page-title">{aboutContent.title}
+                            <span className="page-titleSpan">{aboutContent.titleSpan}</span>
+                        </h1>
                         <p className='page-para'>{aboutContent.paragraph}</p>
                         <p className="page-experience">{aboutContent.experience}<br />
                             <span className="page-experience-span">{aboutContent.experienceSpan}</span>
@@ -77,11 +77,8 @@ const AboutUs = () => {
                     </div>
                 </div>
             )}
-
-            <SocialStatsPage />
-            <AboutUs2 />
         </div>
     );
 };
 
-export default AboutUs;
+export default AboutUs2;

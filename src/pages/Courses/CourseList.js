@@ -88,6 +88,12 @@ const CourseList = () => {
         return 'expiry-normal';
     };
 
+    const calculateDiscountPercentage = (price, offerPrice) => {
+        if (!price || !offerPrice) return null;
+        const discount = ((price - offerPrice) / price) * 100;
+        return Math.round(discount); // Round to nearest whole number
+    };
+
     if (loading) {
         return (
             <div className="loading-container">
@@ -132,7 +138,17 @@ const CourseList = () => {
 
                                 <div className="course-footer">
                                     <div className="course-price">
-                                        ${course.price.toFixed(2)}
+                                        {course.offerPrice ? (
+                                            <div className="price-container">
+                                                <span className="original-price">${course.price.toFixed(2)}</span>
+                                                <span className="offer-price">${course.offerPrice.toFixed(2)}</span>
+                                                <span className="discount-percentage">
+                                                    ({calculateDiscountPercentage(course.price, course.offerPrice)}% off)
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <span>${course.price.toFixed(2)}</span>
+                                        )}
                                     </div>
                                     <div className="course-actions">
                                         <button
@@ -180,7 +196,21 @@ const CourseList = () => {
 
                                 <div className="course-footer">
                                     <div className="course-price">
-                                        ${course.price.toFixed(2)}
+                                        {course.offerPrice ? (
+                                            <div>
+                                                <div className="price-container">
+                                                    <span className="original-price">${course.price.toFixed(2)}</span>
+                                                    <span className="offer-price">${course.offerPrice.toFixed(2)}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="discount-percentage">
+                                                        ({calculateDiscountPercentage(course.price, course.offerPrice)}% off)
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <span>${course.price.toFixed(2)}</span>
+                                        )}
                                     </div>
                                 </div>
                             </div>

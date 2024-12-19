@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { COURSES } from '../../helper/Apihelpers';
@@ -13,6 +13,7 @@ const CourseDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const videoRefs = useRef([]);
 
     useEffect(() => {
         fetchCourseDetails();
@@ -58,6 +59,13 @@ const CourseDetail = () => {
         return !!authToken;
     };
 
+    const handleVideoPlay = (currentVideo) => {
+        videoRefs.current.forEach((video) => {
+            if (video !== currentVideo && video) {
+                video.pause();
+            }
+        });
+    };
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
@@ -97,6 +105,17 @@ const CourseDetail = () => {
                         {contentCount} {contentCount === 1 ? 'video' : 'videos'} in this course
                     </p>
                 </div>
+                <video
+                    ref={(el) => videoRefs.current.push(el)}
+                    src={course.courseVideoUrl}
+                    controls
+                    className="content-video"
+                    poster={course.courseThumbnailUrl}
+                    onPlay={(e) => handleVideoPlay(e.target)}
+                    controlsList="nodownload noplaybackrate"
+                    disablePictureInPicture
+                >
+                </video>
             </div>
 
             <div className="content-grid">
@@ -120,9 +139,14 @@ const CourseDetail = () => {
 
             <div className="purchase-bar">
                 <div className="purchase-container">
-                    <div className="purchase-price">
-                        ${course.price.toFixed(2)}
-                    </div>
+                    {course.offerPrice ? (
+                        <div className="price-container">
+                            <span className="original-price">${course.price.toFixed(2)}</span>
+                            <span className="purchase-price">${course.offerPrice.toFixed(2)}</span>
+                        </div>
+                    ) : (
+                        <span>${course.price.toFixed(2)}</span>
+                    )}
                     <button
                         onClick={handlePurchaseClick}
                         className="purchase-button"
